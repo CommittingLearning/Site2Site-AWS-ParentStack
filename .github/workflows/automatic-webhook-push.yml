@@ -13,8 +13,6 @@ jobs:
             # Checkout the correct branch from the parent repository
             - name: Checkout code
               uses: actions/checkout@v2
-              with:
-                ref: ${{ github.event.client_payload.ref }}     # Use the branch sent by the child repo
 
             # Configure AWS Credentials
             - name: Configure AWS credentials
