@@ -3,6 +3,7 @@ name: Parent Stack Deployment via Webhook
 on:
     repository_dispatch:
         types: [trigger-parent-stack]
+    workflow_dispatch:
 
 jobs:
     deploy:
