@@ -1,0 +1,57 @@
+name: Parent Stack Deployment via Webhook
+
+on:
+    repository_dispatch:
+        types: [trigger-parent-stack]
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            # Checkout the correct branch from the parent repository
+            - name: Checkout code
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.client_payload.ref }}     # Use the branch sent by the child repo
+
+            # Configure AWS Credentials
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+                aws-region: us-west-2
+
+            # Set environment variable based on the branch from child repo
+            - name: Set environment variable based on branch
+              run: |
+                if [[ "${{ github.event.client_payload.ref }}" == "refs/heads/development" ]]; then
+                    echo "ENVIRONMENT=development" >> $GITHUB_ENV
+                elif [[ "${{ github.event.client_payload.ref }}" == "refs/heads/production" ]]; then
+                    echo "ENVIRONMENT=production" >> $GITHUB_ENV
+                else
+                    echo "ENVIRONMENT=default" >> $GITHUB_ENV
+                fi
+
+            # Log Environment Info for Debugging
+            - name: Log Environment Info
+              run: echo "Deploying to ${{ env.ENVIRONMENT }} environment"
+
+            # Pause and wait for manual approval
+            - name: Manual Approval before Apply
+              uses: trstringer/manual-approval@v1
+              with:
+                secret: ${{ secrets.github_TOKEN }}
+                approvers: CommittingLearning
+                issue-title: "Deploying Cloudformation stack to provision services in the ${{ env.ENVIRONMENT }} environment"
+                issue-body: "Please approve or deny the deployment"
+
+            # Apply changes after approval
+            - name: Deploy CloudFormation Stack
+              run: |
+                aws cloudformation deploy \
+                  --template-file template.yaml \
+                  --parameter-overrides Environment=${{ env.ENVIRONMENT }} \
+                  --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
+                  --capabilities CAPABILITY_IAM
