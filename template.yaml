@@ -27,6 +27,8 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Ref VPCStackURL
+        Parameters:
+          Environment: !Ref Environment
       TimeoutInMinutes: 10
 
   EC2Stack:
@@ -36,6 +38,7 @@ Resources:
       Parameters:
         VPCId: !GetAtt VPCStack.Outputs.VPCId
         SubnetId: !GetAtt VPCStack.Outputs.SubnetId
+        Environment: !Ref Environment
       TimeoutInMinutes: 10
 
   VGWStack:
@@ -44,6 +47,7 @@ Resources:
       TemplateURL: !Ref VGWStackURL
       Parameters:
         VPCId: !GetAtt VPCStack.Outputs.VPCId
+        Environment: !Ref Environment
       TimeoutInMinutes: 10
 
   
