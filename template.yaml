@@ -27,8 +27,8 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Ref VPCStackURL
-        Parameters:
-          Environment: !Ref Environment
+      Parameters:
+        Environment: !Ref Environment
       TimeoutInMinutes: 10
 
   EC2Stack:
