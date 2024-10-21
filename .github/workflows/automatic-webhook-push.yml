@@ -30,8 +30,14 @@ jobs:
               run: |
                 if [[ "${{ github.event.client_payload.ref }}" == "refs/heads/development" ]]; then
                     echo "ENVIRONMENT=development" >> $GITHUB_ENV
+                    echo "VPCSTACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/vpc-development-template.yaml" >> $GITHUB_ENV
+                    echo "EC2STACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/EC2-development-template.yaml" >> $GITHUB_ENV
+                    echo "VGWSTACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/VGW-development-template.yaml" >> $GITHUB_ENV
                 elif [[ "${{ github.event.client_payload.ref }}" == "refs/heads/production" ]]; then
                     echo "ENVIRONMENT=production" >> $GITHUB_ENV
+                    echo "VPCSTACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/vpc-production-template.yaml" >> $GITHUB_ENV
+                    echo "EC2STACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/EC2-production-template.yaml" >> $GITHUB_ENV
+                    echo "VGWSTACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/VGW-production-template.yaml" >> $GITHUB_ENV
                 else
                     echo "ENVIRONMENT=default" >> $GITHUB_ENV
                 fi
@@ -60,7 +66,7 @@ jobs:
               run: |
                 aws cloudformation deploy \
                   --template-file template.yaml \
-                  --parameter-overrides Environment=${{ env.ENVIRONMENT }} \
+                  --parameter-overrides Environment=${{ env.ENVIRONMENT }} VPCStackURL=${{ env.VPCSTACKURL }} EC2StackURL=${{ env.EC2STACKURL }} VGWStackURL=${{ env.VGWSTACKURL }} \
                   --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
                   --capabilities CAPABILITY_IAM
 

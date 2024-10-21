@@ -13,17 +13,14 @@ Parameters:
   VPCStackURL:
     Type: String
     Description: The URL for the VPC Template
-    Default: "https://s2s-ts101-cftemplates-${Environment}-164953329762.s3.us-west-2.amazonaws.com/vpc-${Environment}-template.yaml"
 
   EC2StackURL:
     Type: String
     Description: "The URL for the EC2 Template"
-    Default: "https://s2s-ts101-cftemplates-${Environment}-164953329762.s3.us-west-2.amazonaws.com/EC2-${Environment}-template.yaml"
 
   VGWStackURL:
     Type: String
     Description: "The URL for the VPN Gateway Template"
-    Default: "https://s2s-ts101-cftemplates-${Environment}-164953329762.s3.us-west-2.amazonaws.com/VGW-${Environment}-template.yaml"
 
 Resources:
   VPCStack:
