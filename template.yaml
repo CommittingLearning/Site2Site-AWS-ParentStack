@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Parent stack for deploying VPC, EC2, and VPN Gateway"
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment name (e.g., development, production)
+    AllowedValues:
+      - development
+      - production
+      - default
+
+  VPCStackURL:
+    Type: String
+    Description: The URL for the VPC Template
+    Default: "https://s2s-ts101-cftemplates-${Environment}-164953329762.s3.us-west-2.amazonaws.com/vpc-${Environment}-template.yaml"
+
+  EC2StackURL:
+    Type: String
+    Description: "The URL for the EC2 Template"
+    Default: "https://s2s-ts101-cftemplates-${Environment}-164953329762.s3.us-west-2.amazonaws.com/EC2-${Environment}-template.yaml"
+
+  VGWStackURL:
+    Type: String
+    Description: "The URL for the VPN Gateway Template"
+    Default: "https://s2s-ts101-cftemplates-${Environment}-164953329762.s3.us-west-2.amazonaws.com/VGW-${Environment}-template.yaml"
+
+Resources:
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Ref VPCStackURL
+      TimeoutInMinutes: 10
+
+  EC2Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Ref EC2StackURL
+      Parameters:
+        VPCId: !GetAtt VPCStack.Outputs.VPCId
+        SubnetId: !GetAtt VPCStack.Outputs.SubnetId
+      TimeoutInMinutes: 10
+
+  VGWStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Ref VGWStackURL
+      Parameters:
+        VPCId: !GetAtt VPCStack.Outputs.VPCId
+      TimeoutInMinutes: 10
+
+  

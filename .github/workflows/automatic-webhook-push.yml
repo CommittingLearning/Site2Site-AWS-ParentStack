@@ -40,6 +40,12 @@ jobs:
             - name: Log Environment Info
               run: echo "Deploying to ${{ env.ENVIRONMENT }} environment"
 
+            # CloudFormation Validate Step
+            - name: Validate CloudFormation template
+              run: |
+                aws cloudformation validate-template \
+                  --template-body file://template.yaml
+
             # Pause and wait for manual approval
             - name: Manual Approval before Apply
               uses: trstringer/manual-approval@v1
@@ -57,3 +63,19 @@ jobs:
                   --parameter-overrides Environment=${{ env.ENVIRONMENT }} \
                   --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
                   --capabilities CAPABILITY_IAM
+
+            # Wait for 40 minutes (2400 seconds) before proceeding to delete the stack
+            - name: Wait for 40 minutes
+              run: sleep 2400
+
+            # Delete CloudFormation stack after 40 minutes
+            - name: Delete CloudFormation Stack
+              run: |
+                aws cloudformation delete-stack \
+                  --stack-name Parent-Stack-${{ env.ENVIRONMENT }}
+
+            # Confirm deletion of the CloudFormation stack
+            - name: Confirm Stack Deletion
+              run: |
+                aws cloudformation wait stack-delete-complete \
+                  --stack-name Parent-Stack-${{ env.ENVIRONMENT }}
