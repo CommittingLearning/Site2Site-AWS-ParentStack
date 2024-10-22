@@ -48,6 +48,7 @@ Resources:
       TemplateURL: !Ref VGWStackURL
       Parameters:
         VPCId: !GetAtt VPCStack.Outputs.VPCId
+        SubnetId: !GetAtt VPCStack.Outputs.SubnetId
         Environment: !Ref Environment
       TimeoutInMinutes: 10
 
