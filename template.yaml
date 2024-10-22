@@ -29,7 +29,6 @@ Resources:
       TemplateURL: !Ref VPCStackURL
       Parameters:
         Environment: !Ref Environment
-        VGWId: !GetAtt VGWStack.Outputs.VGWId
       TimeoutInMinutes: 10
 
   EC2Stack:
