@@ -68,7 +68,7 @@ jobs:
                   --template-file template.yaml \
                   --parameter-overrides Environment=${{ env.ENVIRONMENT }} VPCStackURL=${{ env.VPCSTACKURL }} EC2StackURL=${{ env.EC2STACKURL }} VGWStackURL=${{ env.VGWSTACKURL }} \
                   --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
-                  --capabilities CAPABILITY_IAM
+                  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
             # Wait for 40 minutes (2400 seconds) before proceeding to delete the stack
             - name: Wait for 40 minutes
