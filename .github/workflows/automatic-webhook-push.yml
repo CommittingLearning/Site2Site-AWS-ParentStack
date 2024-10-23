@@ -72,7 +72,7 @@ jobs:
 
             # Wait for 40 minutes (2400 seconds) before proceeding to delete the stack
             - name: Wait for 40 minutes
-              run: sleep 2400
+              run: sleep 1200
 
             # Delete CloudFormation stack after 40 minutes
             - name: Delete CloudFormation Stack
