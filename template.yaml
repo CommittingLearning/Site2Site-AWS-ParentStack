@@ -38,7 +38,6 @@ Resources:
       Parameters:
         VPCId: !GetAtt VPCStack.Outputs.VPCId
         SubnetId: !GetAtt VPCStack.Outputs.SubnetId
-        EC2SecurityGroupId: !GetAtt VPCStack.Outputs.EC2SecurityGroupId
         Environment: !Ref Environment
       TimeoutInMinutes: 10
 
