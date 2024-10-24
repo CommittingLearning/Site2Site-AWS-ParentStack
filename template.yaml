@@ -22,6 +22,11 @@ Parameters:
     Type: String
     Description: "The URL for the VPN Gateway Template"
 
+  PreSharedKey:
+    Type: String
+    Description: "The PSK used to establish the VPN connection (Passed down to the VGW Stack)"
+    NoEcho: true
+
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
@@ -49,6 +54,7 @@ Resources:
       Parameters:
         VPCId: !GetAtt VPCStack.Outputs.VPCId
         SubnetId: !GetAtt VPCStack.Outputs.SubnetId
+        PreSharedKey: !Ref PreSharedKey
         Environment: !Ref Environment
       TimeoutInMinutes: 10
 
