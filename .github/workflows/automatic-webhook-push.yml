@@ -1,87 +1,88 @@
 name: Parent Stack Deployment via Webhook
 
 on:
-    repository_dispatch:
-        types: [trigger-parent-stack]
+  # Triggered through a push from one of the child repos
+  repository_dispatch:
+    types: [trigger-parent-stack]
 
 permissions:
-    id-token: write
-    contents: read
-    issues: write
+  id-token: write
+  contents: read
+  issues: write
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            # Checkout the correct branch from the parent repository
-            - name: Checkout code
-              uses: actions/checkout@v2
+    steps:
+      # Checkout the correct branch from the parent repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-            # Configure AWS Credentials
-            - name: Configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v3
-              with:
-                role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-                aws-region: us-west-2
+      # Configure AWS Credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-west-2
 
-            # Set environment variable based on the branch from child repo
-            - name: Set environment variable based on branch
-              run: |
-                if [[ "${{ github.event.client_payload.ref }}" == "refs/heads/development" ]]; then
-                    echo "ENVIRONMENT=development" >> $GITHUB_ENV
-                    echo "VPCSTACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/vpc-development-template.yaml" >> $GITHUB_ENV
-                    echo "EC2STACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/EC2-development-template.yaml" >> $GITHUB_ENV
-                    echo "VGWSTACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/VGW-development-template.yaml" >> $GITHUB_ENV
-                elif [[ "${{ github.event.client_payload.ref }}" == "refs/heads/production" ]]; then
-                    echo "ENVIRONMENT=production" >> $GITHUB_ENV
-                    echo "VPCSTACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/vpc-production-template.yaml" >> $GITHUB_ENV
-                    echo "EC2STACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/EC2-production-template.yaml" >> $GITHUB_ENV
-                    echo "VGWSTACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/VGW-production-template.yaml" >> $GITHUB_ENV
-                else
-                    echo "ENVIRONMENT=default" >> $GITHUB_ENV
-                fi
+      # Set environment variable and child template urls based on the branch from child repo
+      - name: Set environment variable based on child branch
+        run: |
+          if [[ "${{ github.event.client_payload.ref }}" == "refs/heads/development" ]]; then
+            echo "ENVIRONMENT=development" >> $GITHUB_ENV
+            echo "VPCSTACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/vpc-development-template.yaml" >> $GITHUB_ENV
+            echo "EC2STACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/EC2-development-template.yaml" >> $GITHUB_ENV
+            echo "VGWSTACKURL=https://s2s-ts101-cftemplates-development-164953329762.s3.us-west-2.amazonaws.com/VGW-development-template.yaml" >> $GITHUB_ENV
+          elif [[ "${{ github.event.client_payload.ref }}" == "refs/heads/production" ]]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "VPCSTACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/vpc-production-template.yaml" >> $GITHUB_ENV
+            echo "EC2STACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/EC2-production-template.yaml" >> $GITHUB_ENV
+            echo "VGWSTACKURL=https://s2s-ts101-cftemplates-production-164953329762.s3.us-west-2.amazonaws.com/VGW-production-template.yaml" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=default" >> $GITHUB_ENV
+          fi
 
-            # Log Environment Info for Debugging
-            - name: Log Environment Info
-              run: echo "Deploying to ${{ env.ENVIRONMENT }} environment"
+      # Log Environment Info for Debugging
+      - name: Log Environment Info
+        run: echo "Deploying to ${{ env.ENVIRONMENT }} environment"
 
-            # CloudFormation Validate Step
-            - name: Validate CloudFormation template
-              run: |
-                aws cloudformation validate-template \
-                  --template-body file://template.yaml
+      # CloudFormation Validate Step
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://template.yaml
 
-            # Pause and wait for manual approval
-            - name: Manual Approval before Apply
-              uses: trstringer/manual-approval@v1
-              with:
-                secret: ${{ secrets.github_TOKEN }}
-                approvers: CommittingLearning
-                issue-title: "Deploying Cloudformation stack to provision services in the ${{ env.ENVIRONMENT }} environment"
-                issue-body: "Please approve or deny the deployment"
+      # Pause and wait for manual approval
+      - name: Manual Approval before Apply
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ secrets.github_TOKEN }}
+          approvers: CommittingLearning
+          issue-title: "Deploying Cloudformation stack to provision services in the ${{ env.ENVIRONMENT }} environment"
+          issue-body: "Please approve or deny the deployment"
 
-            # Apply changes after approval
-            - name: Deploy CloudFormation Stack
-              run: |
-                aws cloudformation deploy \
-                  --template-file template.yaml \
-                  --parameter-overrides Environment=${{ env.ENVIRONMENT }} VPCStackURL=${{ env.VPCSTACKURL }} EC2StackURL=${{ env.EC2STACKURL }} VGWStackURL=${{ env.VGWSTACKURL }} PreSharedKey=${{ secrets.S2SSharedKey }} \
-                  --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
-                  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
+      # Apply changes after approval
+      - name: Deploy CloudFormation Stack
+        run: |
+          aws cloudformation deploy \
+            --template-file template.yaml \
+            --parameter-overrides Environment=${{ env.ENVIRONMENT }} VPCStackURL=${{ env.VPCSTACKURL }} EC2StackURL=${{ env.EC2STACKURL }} VGWStackURL=${{ env.VGWSTACKURL }} PreSharedKey=${{ secrets.S2SSharedKey }} \
+            --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
-            # Wait for 40 minutes (2400 seconds) before proceeding to delete the stack
-            - name: Wait for 40 minutes
-              run: sleep 1200
+      # Wait for 40 minutes (2400 seconds) before proceeding to delete the stack
+      - name: Wait for 40 minutes
+        run: sleep 1200
 
-            # Delete CloudFormation stack after 40 minutes
-            - name: Delete CloudFormation Stack
-              run: |
-                aws cloudformation delete-stack \
-                  --stack-name Parent-Stack-${{ env.ENVIRONMENT }}
+      # Delete CloudFormation stack after 40 minutes
+      - name: Delete CloudFormation Stack
+        run: |
+          aws cloudformation delete-stack \
+            --stack-name Parent-Stack-${{ env.ENVIRONMENT }}
 
-            # Confirm deletion of the CloudFormation stack
-            - name: Confirm Stack Deletion
-              run: |
-                aws cloudformation wait stack-delete-complete \
-                  --stack-name Parent-Stack-${{ env.ENVIRONMENT }}
+      # Confirm deletion of the CloudFormation stack
+      - name: Confirm Stack Deletion
+        run: |
+          aws cloudformation wait stack-delete-complete \
+            --stack-name Parent-Stack-${{ env.ENVIRONMENT }}

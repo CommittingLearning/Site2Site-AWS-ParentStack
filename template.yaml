@@ -28,6 +28,7 @@ Parameters:
     NoEcho: true
 
 Resources:
+  # Deploying the VPC Stack
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -37,6 +38,7 @@ Resources:
       TimeoutInMinutes: 10
 
   EC2Stack:
+    # Deploying the EC2 Stack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Ref EC2StackURL
@@ -48,6 +50,7 @@ Resources:
       TimeoutInMinutes: 10
 
   VGWStack:
+    # Deploying the VGW Stack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Ref VGWStackURL
@@ -57,5 +60,3 @@ Resources:
         PreSharedKey: !Ref PreSharedKey
         Environment: !Ref Environment
       TimeoutInMinutes: 10
-
-  
