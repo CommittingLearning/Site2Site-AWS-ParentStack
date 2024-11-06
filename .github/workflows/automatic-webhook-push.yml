@@ -71,8 +71,8 @@ jobs:
             --stack-name Parent-Stack-${{ env.ENVIRONMENT }} \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
-      # Wait for 40 minutes (2400 seconds) before proceeding to delete the stack
-      - name: Wait for 40 minutes
+      # Wait for the demonstrated time before proceeding to delete the stack
+      - name: Wait for Demonstrated Time
         run: sleep 1200
 
       # Delete CloudFormation stack after 40 minutes
